@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "config.h"
 #include <algorithm>
-#include "include/Menu.hpp"
+#include "include/Menu.h"
 
 config Config;
 
@@ -12,13 +12,16 @@ void config::Update(const char* filterText)
 {
     Config.db_filteredItems.clear();
 
-    for (const auto& itemName : database::db_items) {
-        if (strstr(itemName.c_str(), filterText) != nullptr) {
+    for (const auto& itemName : database::db_items)
+    {
+        if (strstr(itemName.c_str(), filterText) != nullptr)
+        {
             Config.db_filteredItems.push_back(itemName);
         }
     }
     std::sort(Config.db_filteredItems.begin(), Config.db_filteredItems.end());
 }
+
 const std::vector<std::string>& config::GetFilteredItems() { return Config.db_filteredItems; }
 
 bool DetourTick(SDK::APalPlayerCharacter* m_this, float DeltaSecond)
@@ -28,11 +31,12 @@ bool DetourTick(SDK::APalPlayerCharacter* m_this, float DeltaSecond)
         if (m_this->GetPalPlayerController()->IsLocalPlayerController())
         {
             Config.localPlayer = m_this;
-            DX11_Base::g_Menu->Loops();
+            global_Menu->Tick();
         }
     }
     return OldTickFunc(m_this, DeltaSecond);
 }
+
 SDK::UWorld* config::GetUWorld()
 {
     static uint64_t gworld_ptr = 0;
@@ -44,9 +48,17 @@ SDK::UWorld* config::GetUWorld()
     return (*(SDK::UWorld**)(gworld_ptr));
 }
 
+SDK::UPalCheatManager* config::GetPalUtility()
+{
+    if (Config.GetUWorld() != nullptr)
+    {
+        return SDK::UPalUtility::GetDefaultObj()->GetPalCheatManager(Config.GetUWorld());
+    }
+    return nullptr;
+}
+
 SDK::APalPlayerCharacter* config::GetPalPlayerCharacter()
 {
-
     if (Config.localPlayer != NULL)
     {
         return Config.localPlayer;
